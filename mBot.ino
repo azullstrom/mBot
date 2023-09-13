@@ -9,7 +9,7 @@ int COUNTER = 0;
 
 MeLineFollower lineFinder(PORT_9);
 MeEncoderOnBoard left(SLOT2);
-MeEncoderOnBoard right(SLOT1); // Spegelvänd
+MeEncoderOnBoard right(SLOT1);  // Spegelvänd
 MeUltrasonicSensor ultraSensor(PORT_7);
 
 TaskHandle_t lineFollowHandle = NULL, avoidObstacleHandle = NULL;
@@ -23,12 +23,12 @@ void TaskLineFollow(void *pvParameters) {
       left.setMotorPwm(MAX_SPEED);
       right.setMotorPwm(-MAX_SPEED);
       break;
-    case 1: // if 1 sväng vänster (gasa med höger motor)
+    case 1:  // if 1 sväng vänster (gasa med höger motor)
       left.setMotorPwm(0);
       right.setMotorPwm(-MAX_SPEED);
       PREV_LINE_READ = LINE_READ;
       break;
-    case 2: // if 2 sväng höger (gasa med vänster motor)
+    case 2:  // if 2 sväng höger (gasa med vänster motor)
       left.setMotorPwm(MAX_SPEED);
       right.setMotorPwm(0);
       PREV_LINE_READ = LINE_READ;
@@ -37,7 +37,7 @@ void TaskLineFollow(void *pvParameters) {
       if(PREV_LINE_READ == 2){
         left.setMotorPwm(MAX_SPEED);
         right.setMotorPwm(0);
-      }else if(PREV_LINE_READ == 1){
+      } else if (PREV_LINE_READ == 1) {
         left.setMotorPwm(0);
         right.setMotorPwm(-MAX_SPEED);
       } 
