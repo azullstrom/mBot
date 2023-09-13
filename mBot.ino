@@ -27,6 +27,7 @@ void TaskMotor(void *pvParameters) {
   Serial.println(LINE_READ);
   Serial.print("Ultra: ");
   Serial.println(ULTRA_SENSE);
+  LINE_READ = lineFinder.readSensors();
 
   switch(LINE_READ){
     case 0: // if 0 åk framåt (båda motorerna) BÅDA SVARTA
@@ -56,15 +57,16 @@ void TaskMotor(void *pvParameters) {
 }
 
 void TaskUltra(){
-  if(ULTRA_SENSE < 25.00) {
+  ULTRA_SENSE = ultraSensor.distanceCm();
+  if(ULTRA_SENSE < 40.00) {
     left.setMotorPwm(0);
     right.setMotorPwm(0);
   }
 }
 
 void TaskSense() {
-  LINE_READ = lineFinder.readSensors();
-  ULTRA_SENSE = ultraSensor.distanceCm();
+  // LINE_READ = lineFinder.readSensors();
+  // ULTRA_SENSE = ultraSensor.distanceCm();
 }
 
 void setup() {
@@ -74,9 +76,9 @@ void setup() {
   vSchedulerInit();
   //                                                                                              Processens tidsfas, Processens period, Worst-case tid,    Relativ deadline
   // vSchedulerPeriodicTaskCreate(TaskBlip, "blip", configMINIMAL_STACK_SIZE, &c1, 1, &blipHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(400), pdMS_TO_TICKS(100), pdMS_TO_TICKS(400));
-  vSchedulerPeriodicTaskCreate(TaskMotor, "motor", configMINIMAL_STACK_SIZE, &c1, 1, &motorHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(50), pdMS_TO_TICKS(100), pdMS_TO_TICKS(50));
-  vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(50), pdMS_TO_TICKS(100), pdMS_TO_TICKS(50));
-  vSchedulerPeriodicTaskCreate(TaskUltra, "ultra", configMINIMAL_STACK_SIZE, &c1, 1, &ultraHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(50), pdMS_TO_TICKS(100), pdMS_TO_TICKS(50));
+  vSchedulerPeriodicTaskCreate(TaskMotor, "motor", configMINIMAL_STACK_SIZE, &c1, 1, &motorHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(20), pdMS_TO_TICKS(100), pdMS_TO_TICKS(20));
+  // vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(10), pdMS_TO_TICKS(100), pdMS_TO_TICKS(10));
+  vSchedulerPeriodicTaskCreate(TaskUltra, "ultra", configMINIMAL_STACK_SIZE, &c1, 1, &ultraHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(20), pdMS_TO_TICKS(100), pdMS_TO_TICKS(20));
   vSchedulerStart();
 }
 
