@@ -5,7 +5,6 @@ int MAX_SPEED = 100;
 float ULTRA_SENSE = 0;
 int LINE_READ = 3;
 int PREV_LINE_READ = 3;
-int hej = 0;
 
 MeLineFollower lineFinder(PORT_9);
 MeEncoderOnBoard left(SLOT2);
@@ -14,7 +13,6 @@ MeUltrasonicSensor ultraSensor(PORT_7);
 
 MeBuzzer buzzer;
 TaskHandle_t blipHandle = NULL, motorHandle = NULL, senseHandle = NULL, ultraHandle = NULL;
-char c1 = 'a';
 
 void TaskBlip(void *pvParameters) {
   buzzer.tone(400, 100);
@@ -77,9 +75,32 @@ void setup() {
   vSchedulerInit();
   //                                                                                              Processens tidsfas, Processens period, Worst-case tid,    Relativ deadline
   // vSchedulerPeriodicTaskCreate(TaskBlip, "blip", configMINIMAL_STACK_SIZE, &c1, 1, &blipHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(400), pdMS_TO_TICKS(100), pdMS_TO_TICKS(400));
-  vSchedulerPeriodicTaskCreate(TaskMotor, "motor", configMINIMAL_STACK_SIZE, &c1, 1, &motorHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(20), pdMS_TO_TICKS(100), pdMS_TO_TICKS(20));
   // vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(10), pdMS_TO_TICKS(100), pdMS_TO_TICKS(10));
-  vSchedulerPeriodicTaskCreate(TaskUltra, "ultra", configMINIMAL_STACK_SIZE, &c1, 1, &ultraHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(20), pdMS_TO_TICKS(100), pdMS_TO_TICKS(20));
+
+  vSchedulerPeriodicTaskCreate(
+    TaskMotor, // The task function
+    "motor", // Task name
+    configMINIMAL_STACK_SIZE, // Size of stack
+    NULL, // Parameters if any
+    0, // Task prio
+    &motorHandle, // Pointer to the task handle.
+    0, // Task time phase
+    pdMS_TO_TICKS(20), // Task period
+    pdMS_TO_TICKS(100), // Worst-case time
+    pdMS_TO_TICKS(20)); // Relative deadline
+
+  vSchedulerPeriodicTaskCreate(
+    TaskUltra, // The task function
+    "ultra", // Task name
+    configMINIMAL_STACK_SIZE, // Size of stack
+    NULL, // Parameters if any
+    0, // Task prio
+    &ultraHandle, // Pointer to the task handle.
+    0, // Task time phase
+    pdMS_TO_TICKS(20), // Task period
+    pdMS_TO_TICKS(100), // Worst-case time
+    pdMS_TO_TICKS(20)); // Relative deadline
+
   vSchedulerStart();
 }
 
