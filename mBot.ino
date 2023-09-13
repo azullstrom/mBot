@@ -5,6 +5,7 @@ int MAX_SPEED = 100;
 float ULTRA_SENSE = 0;
 int LINE_READ = 3;
 int PREV_LINE_READ = 3;
+int COUNTER = 0;
 
 MeLineFollower lineFinder(PORT_9);
 MeEncoderOnBoard left(SLOT2);
@@ -14,9 +15,9 @@ MeUltrasonicSensor ultraSensor(PORT_7);
 TaskHandle_t lineFollowHandle = NULL, avoidObstacleHandle = NULL;
 
 void TaskLineFollow(void *pvParameters) {
-  while (true) {
-    LINE_READ = lineFinder.readSensors();
+  LINE_READ = lineFinder.readSensors();
 
+  if(COUNTER == 0) {
     switch(LINE_READ){
     case 0: // if 0 åk framåt (båda motorerna) BÅDA SVARTA
       left.setMotorPwm(MAX_SPEED);
@@ -42,33 +43,51 @@ void TaskLineFollow(void *pvParameters) {
       } 
       break;
     }
-    vTaskDelay(pdMS_TO_TICKS(10));
   }
 }
 
 void TaskAvoidObstacle(void *pvParameters) {
-  while (true) {
-    ULTRA_SENSE = ultraSensor.distanceCm();
-    
-    if (ULTRA_SENSE < 40.00) {
-      // Obstacle detected, take avoiding action
-      left.setMotorPwm(MAX_SPEED / 2);  // Example: Slow down left motor
-      right.setMotorPwm(-MAX_SPEED / 2); // Example: Slow down right motor
-    } else {
-      // No obstacle, continue avoiding behavior
-      left.setMotorPwm(MAX_SPEED);  // Example: Move forward
-      right.setMotorPwm(-MAX_SPEED); // Example: Move forward
-    }
 
-    // Check if the line is detected, and if so, switch back to line following
-    LINE_READ = lineFinder.readSensors();
-    if (LINE_READ != 3) {
-      vTaskSuspend(avoidObstacleHandle);
-      vTaskResume(lineFollowHandle);
+  ULTRA_SENSE = ultraSensor.distanceCm();
+  // Serial.print("Ultra: ");
+  // Serial.println(ULTRA_SENSE);
+  if (ULTRA_SENSE < 40.00 || COUNTER > 0) {
+    COUNTER++;
+    if (COUNTER < 50) {
+      left.setMotorPwm(0);
+      right.setMotorPwm(-MAX_SPEED);
+      PREV_LINE_READ = LINE_READ;
     }
+    else if (COUNTER < 100) {
+      left.setMotorPwm(MAX_SPEED);
+      right.setMotorPwm(-MAX_SPEED);
+    }
+    else if (COUNTER < 150) {
+      left.setMotorPwm(MAX_SPEED);
+      right.setMotorPwm(0);
+      PREV_LINE_READ = LINE_READ;
+    }
+    else if (COUNTER < 200) {
+      left.setMotorPwm(MAX_SPEED);
+      right.setMotorPwm(-MAX_SPEED);
+    } 
+    else if (COUNTER < 250) {
+      PREV_LINE_READ = 1;
+      COUNTER = 0;
+    }
+    Serial.println(COUNTER);
+  } 
 
-    vTaskDelay(pdMS_TO_TICKS(10));
-  }
+  // LINE_READ = lineFinder.readSensors();
+  // if (LINE_READ != 3) {
+  //   Serial.println("Break");
+  //   vTaskSuspend(avoidObstacleHandle);
+  //   vTaskResume(lineFollowHandle);
+  // }
+}
+
+void TaskNormalAvoid(void *pvParameters) {
+  static int counter = 0;
 }
 
 void setup() {
