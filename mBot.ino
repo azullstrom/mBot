@@ -11,24 +11,13 @@ MeEncoderOnBoard left(SLOT2);
 MeEncoderOnBoard right(SLOT1); // Spegelvänd
 MeUltrasonicSensor ultraSensor(PORT_7);
 
-MeBuzzer buzzer;
-TaskHandle_t blipHandle = NULL, motorHandle = NULL, senseHandle = NULL, ultraHandle = NULL;
+TaskHandle_t lineFollowHandle = NULL, avoidObstacleHandle = NULL;
 
-void TaskBlip(void *pvParameters) {
-  buzzer.tone(400, 100);
-  buzzer.tone(500, 100);
-  buzzer.tone(600, 100);
-  buzzer.tone(700, 100);
-}
+void TaskLineFollow(void *pvParameters) {
+  while (true) {
+    LINE_READ = lineFinder.readSensors();
 
-void TaskMotor(void *pvParameters) {
-  Serial.print("Line: ");
-  Serial.println(LINE_READ);
-  Serial.print("Ultra: ");
-  Serial.println(ULTRA_SENSE);
-  LINE_READ = lineFinder.readSensors();
-
-  switch(LINE_READ){
+    switch(LINE_READ){
     case 0: // if 0 åk framåt (båda motorerna) BÅDA SVARTA
       left.setMotorPwm(MAX_SPEED);
       right.setMotorPwm(-MAX_SPEED);
@@ -43,29 +32,43 @@ void TaskMotor(void *pvParameters) {
       right.setMotorPwm(0);
       PREV_LINE_READ = LINE_READ;
       break;
-    case 3: // if 3 båda vita ()
+    case 3: // if 3 båda vita
       if(PREV_LINE_READ == 2){
         left.setMotorPwm(MAX_SPEED);
         right.setMotorPwm(0);
       }else if(PREV_LINE_READ == 1){
         left.setMotorPwm(0);
         right.setMotorPwm(-MAX_SPEED);
-      }else{  }
+      } 
       break;
+    }
+    vTaskDelay(pdMS_TO_TICKS(10));
   }
 }
 
-void TaskUltra(){
-  ULTRA_SENSE = ultraSensor.distanceCm();
-  if(ULTRA_SENSE < 40.00) {
-    left.setMotorPwm(0);
-    right.setMotorPwm(0);
-  }
-}
+void TaskAvoidObstacle(void *pvParameters) {
+  while (true) {
+    ULTRA_SENSE = ultraSensor.distanceCm();
+    
+    if (ULTRA_SENSE < 40.00) {
+      // Obstacle detected, take avoiding action
+      left.setMotorPwm(MAX_SPEED / 2);  // Example: Slow down left motor
+      right.setMotorPwm(-MAX_SPEED / 2); // Example: Slow down right motor
+    } else {
+      // No obstacle, continue avoiding behavior
+      left.setMotorPwm(MAX_SPEED);  // Example: Move forward
+      right.setMotorPwm(-MAX_SPEED); // Example: Move forward
+    }
 
-void TaskSense() {
-  // LINE_READ = lineFinder.readSensors();
-  // ULTRA_SENSE = ultraSensor.distanceCm();
+    // Check if the line is detected, and if so, switch back to line following
+    LINE_READ = lineFinder.readSensors();
+    if (LINE_READ != 3) {
+      vTaskSuspend(avoidObstacleHandle);
+      vTaskResume(lineFollowHandle);
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
 }
 
 void setup() {
@@ -73,47 +76,35 @@ void setup() {
   left.setMotionMode(DIRECT_MODE);
   right.setMotionMode(DIRECT_MODE);
   vSchedulerInit();
-  //                                                                                              Processens tidsfas, Processens period, Worst-case tid,    Relativ deadline
-  // vSchedulerPeriodicTaskCreate(TaskBlip, "blip", configMINIMAL_STACK_SIZE, &c1, 1, &blipHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(400), pdMS_TO_TICKS(100), pdMS_TO_TICKS(400));
-  // vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(10), pdMS_TO_TICKS(100), pdMS_TO_TICKS(10));
 
   vSchedulerPeriodicTaskCreate(
-    TaskMotor, // The task function
-    "motor", // Task name
-    configMINIMAL_STACK_SIZE, // Size of stack
+    TaskLineFollow, // Task function
+    "lineFollow",   // Task name
+    configMINIMAL_STACK_SIZE, // Stack size
     NULL, // Parameters if any
-    0, // Task prio
-    &motorHandle, // Pointer to the task handle.
-    0, // Task time phase
+    0,    // Task priority (only used when scheduling policy is manual)
+    &lineFollowHandle, // Pointer to the task handle
+    0,    // Task time phase
     pdMS_TO_TICKS(20), // Task period
     pdMS_TO_TICKS(100), // Worst-case time
-    pdMS_TO_TICKS(20)); // Relative deadline
+    pdMS_TO_TICKS(20)   // Relative deadline
+  );
 
   vSchedulerPeriodicTaskCreate(
-    TaskUltra, // The task function
-    "ultra", // Task name
-    configMINIMAL_STACK_SIZE, // Size of stack
+    TaskAvoidObstacle, // Task function
+    "avoidObstacle",   // Task name
+    configMINIMAL_STACK_SIZE, // Stack size
     NULL, // Parameters if any
-    0, // Task prio
-    &ultraHandle, // Pointer to the task handle.
-    0, // Task time phase
+    0,    // Task priority (only used when scheduling policy is manual)
+    &avoidObstacleHandle, // Pointer to the task handle
+    0,    // Task time phase
     pdMS_TO_TICKS(20), // Task period
     pdMS_TO_TICKS(100), // Worst-case time
-    pdMS_TO_TICKS(20)); // Relative deadline
+    pdMS_TO_TICKS(20)   // Relative deadline
+  );
 
   vSchedulerStart();
 }
 
-  //vSchedulerPeriodicTaskCreate(Vilken funktion som ska köras,
-  //                             Vad heter tasken,
-  //                             Hur stor stack,
-  //                             Parameter som skickas med funktionen,
-  //                             Process prioritet,
-  //                             Pekare till task-objektet,
-
-  //                             Processens tidsfas(oftast 0),
-  //                             Processens period
-  //                             Worst-case exekveringstid
-  //                             Relativ Deadline)
 void loop() {
 }
