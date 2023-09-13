@@ -61,6 +61,7 @@ void TaskUltra() {
   if (ULTRA_SENSE < 40.00) {
     left.setMotorPwm(0);
     right.setMotorPwm(0);
+    buzzer.tone(500, 100);
   }
 }
 
@@ -76,9 +77,9 @@ void setup() {
   vSchedulerInit();
   //                                                                                              Processens tidsfas, Processens period, Worst-case tid,    Relativ deadline
   // vSchedulerPeriodicTaskCreate(TaskBlip, "blip", configMINIMAL_STACK_SIZE, &c1, 1, &blipHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(400), pdMS_TO_TICKS(100), pdMS_TO_TICKS(400));
-  vSchedulerPeriodicTaskCreate(TaskMotor, "motor", configMINIMAL_STACK_SIZE, &c1, 1, &motorHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(100), pdMS_TO_TICKS(100), pdMS_TO_TICKS(100));
-  vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(10), pdMS_TO_TICKS(100), pdMS_TO_TICKS(10));
-  vSchedulerPeriodicTaskCreate(TaskUltra, "ultra", configMINIMAL_STACK_SIZE, &c1, 1, &ultraHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(50), pdMS_TO_TICKS(100), pdMS_TO_TICKS(50));
+  vSchedulerPeriodicTaskCreate(TaskMotor, "motor", configMINIMAL_STACK_SIZE, &c1, 1, &motorHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
+  vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
+  vSchedulerPeriodicTaskCreate(TaskUltra, "ultra", configMINIMAL_STACK_SIZE, &c1, 1, &ultraHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
   vSchedulerStart();
 }
 
