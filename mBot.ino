@@ -5,6 +5,7 @@ int MAX_SPEED = 100;
 float ULTRA_SENSE = 0;
 int LINE_READ = 3;
 int PREV_LINE_READ = 3;
+int hej = 0;
 
 MeLineFollower lineFinder(PORT_9);
 MeEncoderOnBoard left(SLOT2);
