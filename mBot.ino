@@ -49,8 +49,7 @@ void TaskLineFollow(void *pvParameters) {
 void TaskAvoidObstacle(void *pvParameters) {
 
   ULTRA_SENSE = ultraSensor.distanceCm();
-  // Serial.print("Ultra: ");
-  // Serial.println(ULTRA_SENSE);
+
   if (ULTRA_SENSE < 40.00 || COUNTER > 0) {
     COUNTER++;
     if (COUNTER < 50) {
@@ -77,17 +76,6 @@ void TaskAvoidObstacle(void *pvParameters) {
     }
     Serial.println(COUNTER);
   } 
-
-  // LINE_READ = lineFinder.readSensors();
-  // if (LINE_READ != 3) {
-  //   Serial.println("Break");
-  //   vTaskSuspend(avoidObstacleHandle);
-  //   vTaskResume(lineFollowHandle);
-  // }
-}
-
-void TaskNormalAvoid(void *pvParameters) {
-  static int counter = 0;
 }
 
 void setup() {
