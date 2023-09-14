@@ -6,6 +6,7 @@ float ULTRA_SENSE = 0;
 int LINE_READ = 3;
 int PREV_LINE_READ = 3;
 int COUNTER = 0;
+int TIME_JANNE = 35;
 
 MeLineFollower lineFinder(PORT_9);
 MeEncoderOnBoard left(SLOT2);
@@ -50,29 +51,21 @@ void TaskAvoidObstacle(void *pvParameters) {
 
   ULTRA_SENSE = ultraSensor.distanceCm();
   
-  if (ULTRA_SENSE < 40.00 || COUNTER > 0) {
+  if (ULTRA_SENSE < 20.00 || COUNTER > 0) {
     COUNTER++;
-    if (COUNTER < 50) {
-      left.setMotorPwm(0);
-      right.setMotorPwm(-MAX_SPEED);
-      PREV_LINE_READ = LINE_READ;
-    }
-    else if (COUNTER < 100) {
-      left.setMotorPwm(MAX_SPEED);
-      right.setMotorPwm(-MAX_SPEED);
-    }
-    else if (COUNTER < 150) {
-      left.setMotorPwm(MAX_SPEED);
-      right.setMotorPwm(0);
-      PREV_LINE_READ = LINE_READ;
-    }
-    else if (COUNTER < 200) {
-      left.setMotorPwm(MAX_SPEED);
-      right.setMotorPwm(-MAX_SPEED);
-    } 
-    else if (LINE_READ != 3) {
+
+    if (LINE_READ != 3 && COUNTER > TIME_JANNE) {
       PREV_LINE_READ = 1;
       COUNTER = 0;
+    }
+    
+    if (COUNTER < TIME_JANNE) {
+      left.setMotorPwm(-MAX_SPEED);
+      right.setMotorPwm(-MAX_SPEED);
+    }
+    else if (COUNTER < TIME_JANNE*2) {
+      left.setMotorPwm(MAX_SPEED);
+      right.setMotorPwm(-(MAX_SPEED/1.8));
     }
     Serial.println(COUNTER);
   } 
