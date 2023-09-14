@@ -49,7 +49,7 @@ void TaskLineFollow(void *pvParameters) {
 void TaskAvoidObstacle(void *pvParameters) {
 
   ULTRA_SENSE = ultraSensor.distanceCm();
-
+  
   if (ULTRA_SENSE < 40.00 || COUNTER > 0) {
     COUNTER++;
     if (COUNTER < 50) {
@@ -70,7 +70,7 @@ void TaskAvoidObstacle(void *pvParameters) {
       left.setMotorPwm(MAX_SPEED);
       right.setMotorPwm(-MAX_SPEED);
     } 
-    else if (COUNTER < 250) {
+    else if (LINE_READ != 3) {
       PREV_LINE_READ = 1;
       COUNTER = 0;
     }
