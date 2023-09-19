@@ -27,7 +27,7 @@ void TaskMotor(void *pvParameters) {
   Serial.println(LINE_READ);
   Serial.print("Ultra: ");
   Serial.println(ULTRA_SENSE);
-  // LINE_READ = lineFinder.readSensors();
+  LINE_READ = lineFinder.readSensors();
 
   switch (LINE_READ) {
     case 0:  // if 0 åk framåt (båda motorerna) BÅDA SVARTA
@@ -57,17 +57,17 @@ void TaskMotor(void *pvParameters) {
 }
 
 void TaskUltra() {
-  // ULTRA_SENSE = ultraSensor.distanceCm();
+  ULTRA_SENSE = ultraSensor.distanceCm();
   if (ULTRA_SENSE < 40.00) {
-    left.setMotorPwm(0);
+    left.setMotorPwm(MAX_SPEED);
     right.setMotorPwm(0);
     buzzer.tone(500, 100);
   }
 }
 
 void TaskSense() {
-  LINE_READ = lineFinder.readSensors();
-  ULTRA_SENSE = ultraSensor.distanceCm();
+  // LINE_READ = lineFinder.readSensors();
+  // ULTRA_SENSE = ultraSensor.distanceCm();
 }
 
 void setup() {
@@ -78,7 +78,7 @@ void setup() {
   //                                                                                              Processens tidsfas, Processens period, Worst-case tid,    Relativ deadline
   // vSchedulerPeriodicTaskCreate(TaskBlip, "blip", configMINIMAL_STACK_SIZE, &c1, 1, &blipHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(400), pdMS_TO_TICKS(100), pdMS_TO_TICKS(400));
   vSchedulerPeriodicTaskCreate(TaskMotor, "motor", configMINIMAL_STACK_SIZE, &c1, 1, &motorHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
-  vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
+  // vSchedulerPeriodicTaskCreate(TaskSense, "sense", configMINIMAL_STACK_SIZE, &c1, 1, &senseHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
   vSchedulerPeriodicTaskCreate(TaskUltra, "ultra", configMINIMAL_STACK_SIZE, &c1, 1, &ultraHandle, pdMS_TO_TICKS(0), pdMS_TO_TICKS(40), pdMS_TO_TICKS(100), pdMS_TO_TICKS(40));
   vSchedulerStart();
 }
